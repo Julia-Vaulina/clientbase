@@ -2,7 +2,7 @@ import psycopg2
 
 with psycopg2.connect(database="clientbase",
                       user="postgres",
-                      password="29fihonu") as conn:
+                      password="") as conn:
     with conn.cursor() as cur:
         cur.execute("""
         DROP TABLE homework;
