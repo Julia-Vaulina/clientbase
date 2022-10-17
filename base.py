@@ -1,13 +1,69 @@
 import psycopg2
 
+
+def new_client(cursor, name, surname, email):
+    cursor.execute("""
+    INSERT INTO clients(name, surname, email) 
+    VALUES (%s, %s, %s) RETURNING id;
+    """, (name, surname, email,))
+    return cur.fetchone()
+
+
+def client_number(cursor, client_id, number):
+    cursor.execute("""
+    INSERT INTO phones(client_id, number) 
+    VALUES (%s, %s) RETURNING id;
+    """, (client_id, number,))
+    return cur.fetchone()
+
+
+def update_client(cursor, email, name, surname, id):
+    cursor.execute("""
+    UPDATE clients 
+    SET email=%s, name = %s, surname = %s WHERE id=%s;
+    """, (email, name, surname, id,))
+    cur.execute("""
+    SELECT * FROM clients WHERE id=%s;
+    """, (id,))
+    return cur.fetchone()
+
+
+def delete_client_number(cursor, client_id):
+    cursor.execute("""
+    DELETE FROM phones WHERE client_id=%s;""", (client_id,))
+    cur.execute("""
+    SELECT * FROM phones;
+    """)
+    return cur.fetchall()
+
+
+def delete_client(cursor, id):
+    cursor.execute("""
+    DELETE FROM clients WHERE id=%s;""", (id,))
+    cur.execute("""
+    SELECT * FROM clients;
+    """)
+    return cur.fetchall()
+
+
+def search_client(cursor, name, surname, email):
+    cursor.execute("""
+    SELECT clients.id, name, surname, email, number 
+    FROM clients 
+    JOIN phones ON clients.id = phones.client_id 
+    WHERE name=%s OR surname=%s OR email=%s;
+    """, (name, surname, email,))
+    return cur.fetchall()
+
+
 with psycopg2.connect(database="clientbase",
                       user="postgres",
-                      password="29fihonu") as conn:
+                      password="") as conn:
     with conn.cursor() as cur:
-        cur.execute("""
-        DROP TABLE homework;
-        DROP TABLE course;
-        """)
+        # cur.execute("""
+        # DROP TABLE homework;
+        # DROP TABLE course;
+        # """)
 
         cur.execute("""
         CREATE TABLE IF NOT EXISTS clients(
@@ -38,89 +94,23 @@ with psycopg2.connect(database="clientbase",
                         (3, 147852);""")
         conn.commit()
 
-
-        def new_client(cursor):
-            name = input('Введите имя: ')
-            surname = input('Введите фамилию: ')
-            email = input('Введите электронную почту: ')
-            cursor.execute("""
-            INSERT INTO clients(name, surname, email) 
-            VALUES (%s, %s, %s) RETURNING id;
-            """, (name, surname, email,))
-            return cur.fetchone()
-
-        def client_number(cursor):
-            client_id = int(input('Введите id: '))
-            number = int(input('Введите номер телефона: '))
-            cursor.execute("""
-            INSERT INTO phones(client_id, number) 
-            VALUES (%s, %s) RETURNING id;
-            """, (client_id, number,))
-            return cur.fetchone()
-
-        def update_client_email(cursor):
-            id = int(input('Введите id: '))
-            email = input('Введите электронную почту: ')
-            cursor.execute("""
-            UPDATE clients 
-            SET email=%s WHERE id=%s;
-            """, (email, id,))
-            cur.execute("""
-            SELECT * FROM clients WHERE id=%s;
-            """, (id,))
-            return cur.fetchone()
-
-        def delete_client_number(cursor):
-            client_id = int(input('Введите id: '))
-            cursor.execute("""
-            DELETE FROM phones WHERE client_id=%s;""", (client_id,))
-            cur.execute("""
-            SELECT * FROM phones;
-            """)
-            return cur.fetchall()
-
-        def delete_client(cursor):
-            id = int(input('Введите id: '))
-            cursor.execute("""
-            DELETE FROM clients WHERE id=%s;""", (id,))
-            cur.execute("""
-            SELECT * FROM clients;
-            """)
-            return cur.fetchall()
-
-
-        def search_client_name(cursor):
-            name = input('Введите имя: ')
-            cursor.execute("""
-            SELECT clients.id, name, surname, email, number 
-            FROM clients 
-            JOIN phones ON clients.id = phones.client_id 
-            WHERE name=%s;
-            """, (name,))
-            return cur.fetchall()
-
-
-        add_new_client = new_client(cur)
+        add_new_client = new_client(cur, 'Julia', 'Black', 'julia@gmail.com')
         print(add_new_client)
 
-        add_client_number = client_number(cur)
+        add_client_number = client_number(cur, 9, 582639)
         print(add_client_number)
 
-        update_email = update_client_email(cur)
-        print(update_email)
+        update = update_client(cur, 'juli_white@gmail.com', 'Julia', 'White', 1)
+        print(update)
 
-        search_client = search_client_name(cur)
-        print(search_client)
-
-        update_email = update_client_email(cur)
-        print(update_email)
-
-        delete_number = delete_client_number(cur)
+        delete_number = delete_client_number(cur, 9)
         print(delete_number)
 
-        del_client = delete_client(cur)
+        del_client = delete_client(cur, 9)
         print(del_client)
 
+        search_client = search_client(cur, 'Julia', 'Brown', 'julia_black@gmail.com')
+        print(search_client)
 
 
 
